@@ -23,7 +23,7 @@ FULLREL=$(cat /etc/issue.net)
 OSNAME=$(cat /etc/issue.net | cut -d' ' -f1)
 RELNO=$(cat /etc/issue.net | tr -d -c 0-9. | cut -d. -f1)
 
-SERVERIP=$(ip a s eth0 | awk '/inet / {print$2}' | cut -d/ -f1)
+SERVERIP=$(hostname --ip-address)
 WEBPASS=''
 cronline1="@reboot sleep 10; /usr/local/bin/rtcheck irssi rtorrent"
 cronline2="*/10 * * * * /usr/local/bin/rtcheck irssi rtorrent"
@@ -521,22 +521,9 @@ if [ $OSNAME = "Raspbian" ]; then
   echo 'enabled = no' >> /var/www/rutorrent/conf/plugins.ini
 fi
 
-# Install Apache
-echo "Installing Apache" | tee -a $logfile
-apt-get -y install apache2 apache2-utils libapache2-mod-php5
-a2enmod auth_digest
-a2enmod reqtimeout
-a2enmod ssl
-sed -i "s/Timeout 300/Timeout 30/g" /etc/apache2/apache2.conf
-echo "ServerSignature Off" >> /etc/apache2/apache2.conf
-echo "ServerTokens Prod" >> /etc/apache2/apache2.conf
-openssl req -x509 -nodes -days 365 -subj /CN=$SERVERIP -newkey rsa:2048 -keyout /etc/ssl/ruweb.key -out /etc/ssl/ruweb.crt
-htdigest -c /etc/apache2/htpasswd rutorrent $user
-cp /var/www/html/index.html /var/www/index.html
-cp /etc/apache2/sites-available/000-default.conf  /etc/apache2/sites-available/000-default.old
-wget -q --no-check-certificate --output-document=/etc/apache2/sites-available/000-default.conf https://raw.githubusercontent.com/dldfree/hello-world/master/000-default.conf
-perl -pi -e "s/<Server IP>/$SERVERIP/g" /etc/apache2/sites-available/000-default.conf
-sudo service apache2 restart
+# install nginx
+
+
 
 # install autodl-irssi
 echo "Installing autodl-irssi" | tee -a $logfile
